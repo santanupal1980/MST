@@ -155,11 +155,9 @@ class Graph():
 
 
                 self.y = tf.placeholder(tf.int32, shape=(None, hp.maxlen))
-                #self.y_mono = tf.placeholder(tf.int32, shape=(None, hp.maxlen))
 
             # define decoder inputs
             self.decoder_inputs = tf.concat((tf.ones_like(self.y[:, :1]) * 2, self.y[:, :-1]), -1)  # 2:<S>
-            #self.decoder_inputs2 = tf.concat((tf.ones_like(self.y_mono[:, :1]) * 2, self.y_mono[:, :-1]), -1)  # 2:<S>
 
             src2idx1, idx2src1 = load_src1_vocab()
             src2idx2, idx2src2 = load_src2_vocab()
@@ -200,14 +198,19 @@ class Graph():
             self.perplexity = np.power(2, self.mean_loss)
 
             # Training Scheme
-            self.global_step = tf.Variable(0, name='global_step', trainable=False)
+            self.global_step = tf.get_variable(name='global_step', dtype=tf.int32, shape=[],
+                                               trainable=False, initializer=tf.zeros_initializer)
+            learning_rate_warmup_steps = 4000
+            warmup_steps = tf.to_float(learning_rate_warmup_steps)
+            global_step = tf.to_float(self.global_step)
+            learning_rate = hp.hidden_units ** -0.5 * tf.minimum(
+                (global_step + 1.0) * warmup_steps ** -1.5, (global_step + 1.0) ** -0.5)
 
-            learning_rate = hp.lr #tf.train.exponential_decay(hp.lr, self.global_step, 100000, 0.96, staircase=True)
+            #learning_rate = hp.lr #tf.train.exponential_decay(hp.lr, self.global_step, 100000, 0.96, staircase=True)
 
             self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.98,
                                                     epsilon=1e-8)
-            # self.optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9,
-            # use_locking = False, name = 'Momentum', use_nesterov = True)
+            # self.optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9, use_locking = False, name = 'Momentum', use_nesterov = True)
             self.train_op = self.optimizer.minimize(self.mean_loss, global_step=self.global_step)
 
             # Summary
