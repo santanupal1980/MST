@@ -16,7 +16,7 @@ def make_vocab(infile, outfile):
     if not os.path.exists(hp.prep): os.mkdir(hp.prep)
     with codecs.open(hp.prep + '/{}'.format(outfile), 'w', 'utf-8') as fout:
         fout.write(
-            "{}\t1000000001\n{}\t1000000002\n{}\t1000000000\n{}\t1000000000\n".format("<PAD>", "<UNK>", "<S>", "</S>"))
+            "{}\t1000000000\n{}\t1000000000\n{}\t1000000000\n{}\t1000000000\n".format("<PAD>", "<UNK>", "<S>", "</S>"))
         for word, cnt in word2cnt.most_common(len(word2cnt)):
             fout.write(u"{}\t{}\n".format(word, cnt))
 
