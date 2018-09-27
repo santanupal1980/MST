@@ -48,7 +48,7 @@ class Graph():
         for i in range(hp.num_blocks):
             with tf.variable_scope("enc1_num_blocks_{}".format(i)):
                 ### Multihead Attention
-                enc, _ = multihead_attention(queries=enc,
+                enc_att, _ = multihead_attention(queries=enc,
                                              keys=enc,
                                              num_units=hp.hidden_units,
                                              num_heads=hp.num_heads,
@@ -57,7 +57,7 @@ class Graph():
                                              causality=False)
 
                 ### Feed Forward
-                enc = feedforward(enc, num_units=[4 * hp.hidden_units, hp.hidden_units])
+                enc += feedforward(enc_att, num_units=[4 * hp.hidden_units, hp.hidden_units])
         return enc
 
     def decoder(self, decoder_inputs, vocab_size, enc, scope=None, is_training=False):
@@ -92,7 +92,7 @@ class Graph():
         for i in range(hp.num_blocks):
             with tf.variable_scope("num_blocks_{}".format(i)):
                 ## Multihead Attention ( self-attention)
-                dec, _ = multihead_attention(queries=dec,
+                dec_satt, _ = multihead_attention(queries=dec,
                                              keys=dec,
                                              num_units=hp.hidden_units,
                                              num_heads=hp.num_heads,
@@ -102,7 +102,7 @@ class Graph():
                                              scope="self_attention")
 
                 ## Multihead Attention ( vanilla attention)
-                dec, alignments = multihead_attention(queries=dec,
+                dec_vatt, alignments = multihead_attention(queries=dec_satt,
                                                       keys=enc,
                                                       num_units=hp.hidden_units,
                                                       num_heads=hp.num_heads,
@@ -112,7 +112,7 @@ class Graph():
                                                       scope="vanilla_attention")
 
                 ## Feed Forward
-                dec = feedforward(dec, num_units=[4 * hp.hidden_units, hp.hidden_units])
+                dec += feedforward(dec_vatt, num_units=[4 * hp.hidden_units, hp.hidden_units])
 
         return dec, alignments
 
@@ -126,7 +126,7 @@ class Graph():
         for i in range(hp.num_blocks):
             with tf.variable_scope("enc_num_blocks_{}".format(i)):
                 ### Multihead Attention
-                enc, _ = multihead_attention(queries=enc,
+                enc_att, _ = multihead_attention(queries=enc,
                                              keys=enc,
                                              num_units=hp.hidden_units,
                                              num_heads=hp.num_heads,
@@ -135,7 +135,7 @@ class Graph():
                                              causality=False)
 
                 ### Feed Forward
-                enc = feedforward(enc, num_units=[4 * hp.hidden_units, hp.hidden_units])
+                enc += feedforward(enc_att, num_units=[4 * hp.hidden_units, hp.hidden_units])
         return enc
 
 
